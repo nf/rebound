@@ -7,26 +7,19 @@
 -- enc2: rotate orb^s
 -- enc3: accelerate orb^s
 
--- written by nf in august 2018
--- params and scales taken from tehn/awake, thanks
-
--- TODO:
--- - ack-based version
+-- contributors: nf, okyeron
 
 local cs = require 'controlspec'
-local Midi = require 'midi'
-local MusicUtil = require 'mark_eats/musicutil'
+local MusicUtil = require 'musicutil'
+local BeatClock = require 'beatclock'
 
 engine.name = "PolyPerc"
 
 local m = midi.connect()
+local clk = BeatClock.new()
 
 local balls = {}
 local cur_ball = 0
-
-local BeatClock = require 'beatclock'
-local clk = BeatClock.new()
-
 local scale_notes = {}
 local note_queue = {}
 local note_off_queue = {}
@@ -40,8 +33,9 @@ local shift = false
 
 local info_note_name = ""
 local info_visible = false
-local info_timer = metro.alloc()
-info_timer.callback = function() info_visible = false end
+local info_timer = metro.init()
+info_timer.event = function() info_visible = false end
+
 function show_info()
   info_visible = true
   info_timer:start(1, 1)
@@ -53,10 +47,10 @@ end
 function init()
   screen.aa(1)
 
-  local u = metro.alloc()
+  local u = metro.init()
   u.time = 1/60
   u.count = -1
-  u.callback = update
+  u.event = update
   u:start()
 
   clk.on_step = play_notes
