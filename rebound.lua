@@ -239,14 +239,14 @@ end
 function play_notes()
   -- send note off for previously played notes
   while #note_off_queue > 0 do
-    m.send({type='note_off', note=table.remove(note_off_queue)})
+    m:send({type='note_off', note=table.remove(note_off_queue)})
   end
   -- play queued notes
   while #note_queue > 0 do
     local n = table.remove(note_queue)
     n = MusicUtil.snap_note_to_array(n, scale_notes)
     engine.hz(MusicUtil.note_num_to_freq(n))
-    m.send({type='note_on', note=n})
+    m:send({type='note_on', note=n})
     if params:get("ii") == 2 then
       crow.ii.jf.play_note((n - 60) / 12, 5)
     end
