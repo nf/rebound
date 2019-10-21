@@ -18,6 +18,7 @@ engine.name = "PolyPerc"
 local m = midi.connect()
 local clk = BeatClock.new()
 
+local ii_options = {"off", "ii jf"}
 local balls = {}
 local cur_ball = 0
 local scale_notes = {}
@@ -57,6 +58,8 @@ function init()
   clk.on_select_internal = function() clk:start() end
   clk:add_clock_params()
 
+  params:add_option("ii", "ii", ii_options, 1)
+  params:set_action("ii", function() crow.ii.pullup(true) crow.ii.jf.mode(1) end)
   params:add_separator()
 
   local scales = {}
@@ -244,6 +247,9 @@ function play_notes()
     n = MusicUtil.snap_note_to_array(n, scale_notes)
     engine.hz(MusicUtil.note_num_to_freq(n))
     m:send({type='note_on', note=n})
+    if params:get("ii") == 2 then
+      crow.ii.jf.play_note((n - 60) / 12, 5)
+    end
     table.insert(note_off_queue, n)
   end
 end
