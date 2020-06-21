@@ -11,12 +11,10 @@
 
 local cs = require 'controlspec'
 local MusicUtil = require 'musicutil'
-local BeatClock = require 'beatclock'
 
 engine.name = "PolyPerc"
 
 local m = midi.connect()
-local clk = BeatClock.new()
 
 local ii_options = {"off", "ii jf"}
 local balls = {}
@@ -54,9 +52,8 @@ function init()
   u.event = update
   u:start()
 
-  clk.on_step = play_notes
-  clk.on_select_internal = function() clk:start() end
-  clk:add_clock_params()
+  cs.CLOCKDIV = cs.new(1/4,16,'lin',0.5,4,'')
+  params:add_control("step_div", "clock division", cs.CLOCKDIV)
 
   params:add_option("ii", "ii", ii_options, 1)
   params:set_action("ii", function() crow.ii.pullup(true) crow.ii.jf.mode(1) end)
@@ -100,6 +97,15 @@ function init()
   function(x) engine.gain(x) end)
 
   params:bang()
+  
+  clock.run(pulse)
+end
+
+function pulse()
+  while true do
+    clock.sync(1/params:get("step_div"))
+    play_notes()
+  end
 end
 
 function build_scale()
